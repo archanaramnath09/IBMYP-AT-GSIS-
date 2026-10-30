@@ -150,7 +150,7 @@ export const MypCurriculumFramework: React.FC = () => {
                   title="Click to zoom full-resolution framework diagram"
                 >
                   <img
-                    src="/assets/ib-myp-framework.png"
+                    src="/assets/aistudio/en-myp_488a04c5.png"
                     alt="Official IB Middle Years Programme Concentric Curriculum Framework"
                     className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-102"
                   />
@@ -964,7 +964,7 @@ export const MypCurriculumFramework: React.FC = () => {
             <div className="max-h-[82vh] overflow-y-auto mt-2 flex items-center justify-center bg-slate-50 p-2 rounded">
               {lightboxImage === 'framework' ? (
                 <img
-                  src="/assets/ib-myp-framework.png"
+                  src="/assets/aistudio/en-myp_488a04c5.png"
                   alt="Official IB Middle Years Programme Concentric Curriculum Framework"
                   className="max-h-[78vh] w-auto object-contain rounded shadow-xs"
                 />
