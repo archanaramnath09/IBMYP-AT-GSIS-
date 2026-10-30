@@ -1,0 +1,169 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile for authenticated GSIS parent or student.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User UID matching auth.uid",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 254
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Full name of the parent or student",
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "description": "User affiliation role (e.g. parent, student)",
+          "enum": ["parent", "student", "educator"],
+          "maxLength": 30
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account registration timestamp"
+        }
+      },
+      "required": ["id", "email", "displayName", "role"]
+    },
+    "PathwayPlan": {
+      "title": "PathwayPlan",
+      "description": "Saved MYP 4–5 course stream configuration and subject preferences.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the pathway plan",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner UID matching auth.uid",
+          "maxLength": 128
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Name of the student for this plan",
+          "maxLength": 100
+        },
+        "stream": {
+          "type": "string",
+          "description": "Chosen academic stream",
+          "enum": ["science", "non-science"],
+          "maxLength": 20
+        },
+        "languageAcquisition": {
+          "type": "string",
+          "description": "Chosen Language Acquisition subject",
+          "enum": ["Hindi", "French", "Spanish", "German"],
+          "maxLength": 30
+        },
+        "ePortfolioSubject": {
+          "type": "string",
+          "description": "Chosen Arts or Design ePortfolio subject",
+          "enum": ["Visual Arts", "Design", "Music", "Theatre", "Dance"],
+          "maxLength": 30
+        },
+        "nonScienceElective": {
+          "type": "string",
+          "description": "Optional elective choice for Non-Science stream",
+          "enum": ["Economics", "Business Management", "none"],
+          "maxLength": 30
+        },
+        "notes": {
+          "type": "string",
+          "description": "Parent or student reflection notes",
+          "maxLength": 1000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["id", "userId", "stream", "languageAcquisition", "ePortfolioSubject"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Inquiry ticket submitted to the GSIS MYP Office.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique inquiry ticket ID",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Submitter UID matching auth.uid",
+          "maxLength": 128
+        },
+        "parentName": {
+          "type": "string",
+          "description": "Name of the parent or guardian",
+          "maxLength": 120
+        },
+        "studentGrade": {
+          "type": "string",
+          "description": "Student current or prospective grade",
+          "maxLength": 50
+        },
+        "topic": {
+          "type": "string",
+          "description": "Subject topic of inquiry",
+          "maxLength": 150
+        },
+        "message": {
+          "type": "string",
+          "description": "Detailed text of the inquiry",
+          "maxLength": 2000
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the ticket",
+          "enum": ["submitted", "acknowledged", "resolved"],
+          "maxLength": 30
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Submission timestamp"
+        }
+      },
+      "required": ["id", "userId", "parentName", "studentGrade", "topic", "message", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "User profile documents owned by the authenticated parent or student."
+    },
+    "/users/{userId}/pathways/{pathwayId}": {
+      "schema": {
+        "$ref": "#/entities/PathwayPlan"
+      },
+      "description": "Saved MYP 4–5 course plans owned by the user."
+    },
+    "/users/{userId}/inquiries/{inquiryId}": {
+      "schema": {
+        "$ref": "#/entities/Inquiry"
+      },
+      "description": "Academic inquiries submitted by the authenticated user to the GSIS MYP Office."
+    }
+  }
+}

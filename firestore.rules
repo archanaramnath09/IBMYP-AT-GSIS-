@@ -1,0 +1,120 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // User Profile Validation
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'email', 'displayName', 'role']) &&
+             data.keys().hasOnly(['id', 'email', 'displayName', 'role', 'createdAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.email is string && data.email.size() <= 254 &&
+             data.displayName is string && data.displayName.size() <= 120 &&
+             data.role in ['parent', 'student', 'educator'];
+    }
+
+    // Pathway Plan Validation
+    function isValidPathway(data) {
+      return data.keys().hasAll(['id', 'userId', 'stream', 'languageAcquisition', 'ePortfolioSubject']) &&
+             data.keys().hasOnly(['id', 'userId', 'studentName', 'stream', 'languageAcquisition', 'ePortfolioSubject', 'nonScienceElective', 'notes', 'createdAt', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.stream in ['science', 'non-science'] &&
+             data.languageAcquisition in ['Hindi', 'French', 'Spanish', 'German'] &&
+             data.ePortfolioSubject in ['Visual Arts', 'Design', 'Music', 'Theatre', 'Dance'] &&
+             (!('studentName' in data) || (data.studentName is string && data.studentName.size() <= 100)) &&
+             (!('nonScienceElective' in data) || (data.nonScienceElective in ['Economics', 'Business Management', 'none'])) &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000));
+    }
+
+    // Inquiry Ticket Validation
+    function isValidInquiry(data) {
+      return data.keys().hasAll(['id', 'userId', 'parentName', 'studentGrade', 'topic', 'message', 'status']) &&
+             data.keys().hasOnly(['id', 'userId', 'parentName', 'studentGrade', 'topic', 'message', 'status', 'createdAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.parentName is string && data.parentName.size() <= 120 &&
+             data.studentGrade is string && data.studentGrade.size() <= 50 &&
+             data.topic is string && data.topic.size() <= 150 &&
+             data.message is string && data.message.size() <= 2000 &&
+             data.status in ['submitted', 'acknowledged', 'resolved'];
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false; // Disallow querying across all users
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidUser(incoming()) &&
+                       incoming().id == userId;
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidUser(incoming()) &&
+                       incoming().id == userId &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'role', 'email']);
+
+      allow delete: if false;
+
+      // User's Saved Pathway Plans Subcollection
+      match /pathways/{pathwayId} {
+        allow get: if isOwner(userId) && isValidId(pathwayId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(pathwayId) &&
+                         isValidPathway(incoming()) &&
+                         incoming().userId == userId;
+
+        allow update: if isOwner(userId) &&
+                         isValidId(pathwayId) &&
+                         isValidPathway(incoming()) &&
+                         incoming().userId == userId;
+
+        allow delete: if isOwner(userId) && isValidId(pathwayId);
+      }
+
+      // User's Submitted Inquiries Subcollection
+      match /inquiries/{inquiryId} {
+        allow get: if isOwner(userId) && isValidId(inquiryId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(inquiryId) &&
+                         isValidInquiry(incoming()) &&
+                         incoming().userId == userId;
+
+        allow update: if false; // Inquiries are immutable records from the client
+        allow delete: if isOwner(userId) && isValidId(inquiryId);
+      }
+    }
+  }
+}

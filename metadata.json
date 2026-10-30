@@ -1,0 +1,6 @@
+{
+  "name": "Good Shepherd International School - MYP Curriculum Guide",
+  "description": "Comprehensive parent and student guide to the IB Middle Years Programme (MYP 1–5) at Good Shepherd International School (GSIS), Ooty.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
